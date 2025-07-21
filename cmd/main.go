@@ -7,12 +7,16 @@ import (
 	"os"
 
 	"github.com/greatdaveo/SendlyPay/routes"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	godotenv.Load(".env")
+
 	routes.WhatsAppRoutes()
 
 	port := os.Getenv("PORT")
+	fmt.Println("PORT: ", port)
 	if port == "" {
 		port = "8080"
 	}
