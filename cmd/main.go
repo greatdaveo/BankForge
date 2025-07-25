@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/greatdaveo/SendlyPay/routes"
+	"github.com/greatdaveo/SendlyPay/services"
 	"github.com/joho/godotenv"
 )
 
@@ -14,6 +15,9 @@ func main() {
 	godotenv.Load(".env")
 
 	routes.WhatsAppRoutes()
+
+	// To set a temporary initial amount balance
+	services.SetInitialBalance("whatsapp:+447778797699", 200.00)
 
 	port := os.Getenv("PORT")
 	fmt.Println("PORT: ", port)
