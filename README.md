@@ -1,6 +1,6 @@
-# SendlyPay
+# BankForge
 
-**SendlyPay** is an AI-powered WhatsApp assistant that allows users to send money using just a text message. Built with Go, the service connects with Open Banking APIs in the UK to process secure payments based on natural language commands received through WhatsApp.
+**BankForge** is an AI-powered WhatsApp assistant that allows users to send money using just a text message. Built with Go, the service connects with Open Banking APIs in the UK to process secure payments based on natural language commands received through WhatsApp.
 
 ---
 
@@ -21,4 +21,4 @@ Acc: 12345678
 Sort Code: 12-34-56
 ```
 
-SendlyPay will extract the payment details, confirm the action, and process the transaction securely - all without leaving WhatsApp.
+BankForge will extract the payment details, confirm the action, and process the transaction securely - all without leaving WhatsApp.
