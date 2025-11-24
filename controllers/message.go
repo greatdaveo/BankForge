@@ -7,6 +7,7 @@ import (
 
 	"github.com/greatdaveo/SendlyPay/models"
 	"github.com/greatdaveo/SendlyPay/services"
+	"github.com/greatdaveo/SendlyPay/store"
 )
 
 // In memory session
@@ -34,7 +35,7 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 		totalTransactions := services.GetRecentTransactions(from, 5)
 
 		if len(totalTransactions) == 0 {
-			_ = services.SendWhatsAppMessage(from, "❌ No transactions found.")
+			_ = services.SendWhatsAppMessage(from, "No transactions found.")
 		} else {
 			reply := "📑 Your recent transactions:\n"
 			for _, transaction := range totalTransactions {
@@ -58,12 +59,36 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 
 		if services.DeductFromWallet(from, pending.Amount) {
 			receipt := services.GenerateReceipt(from, pending)
+
+			// To retrieve the access token
+			oauth, ok := store.AccessTokenStore[from]
+			if !ok {
+				services.SendWhatsAppMessage(from, "You need to link your bank before making payments.")
+				return
+			}
+
+			paymentPayload, err := services.BuildPaymentPayload(pending, oauth.User)
+			if err != nil {
+				fmt.Println("Failed to build payment body: ", err)
+				services.SendWhatsAppMessage(from, "Failed to process payment payload.")
+				return
+			}
+
+			err = services.InitiatePayment(oauth.AccessToken, paymentPayload)
+			if err != nil {
+				fmt.Println("Payment request to TrueLayer failed:", err)
+				services.SendWhatsAppMessage(from, "Payment failed to process.")
+				return
+			}
+
+			services.SendWhatsAppMessage(from, " Payment successfully initiated with the bank.")
+
 			// To save receipt to the user history
 			services.SaveTransaction(from, receipt)
 
 			// To send successful message
 			reply := fmt.Sprintf(
-				"✅ Payment Successful!\nRef: %s\nSent £%.2f to %s\nAccount Number: %s\nSort Code: %s",
+				" Payment Successful!\nRef: %s\nSent £%.2f to %s\nAccount Number: %s\nSort Code: %s",
 				receipt.Reference,
 				receipt.Amount,
 				receipt.ToName,
@@ -71,11 +96,11 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 				receipt.SortCode,
 			)
 			_ = services.SendWhatsAppMessage(from, reply)
-			fmt.Printf("✅ Payment processed for %s: £%.2f\n", from, pending.Amount)
+			fmt.Printf(" Payment processed for %s: £%.2f\n", from, pending.Amount)
 		} else {
-			reply := fmt.Sprintf("❌ Insufficient balance. Your wallet has £%.2f", services.GetBalance(from))
+			reply := fmt.Sprintf("Insufficient balance. Your wallet has £%.2f", services.GetBalance(from))
 			_ = services.SendWhatsAppMessage(from, reply)
-			fmt.Printf("❌ Payment failed for %s: insufficient funds\n", from)
+			fmt.Printf("Payment failed for %s: insufficient funds\n", from)
 		}
 
 		// To clear session
@@ -86,10 +111,10 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 
 	// If No, cancel payment
 	if hasSession && message == "no" {
-		fmt.Printf("❌ Payment canceled by user: %+v\n", pending)
+		fmt.Printf("Payment canceled by user: %+v\n", pending)
 
 		// To send cancellation reply
-		_ = services.SendWhatsAppMessage(from, "❌ Payment cancelled.")
+		_ = services.SendWhatsAppMessage(from, "Payment cancelled.")
 		delete(sessionStore, from)
 		w.WriteHeader(http.StatusOK)
 		return
@@ -98,7 +123,7 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 	// To Call AI to extract payment details as a new message, if otherwise
 	info, err := services.ExtractPaymentInfo(r.FormValue("Body"))
 	if err != nil {
-		fmt.Printf("❌ Failed to extract payment info: %v\n", err)
+		fmt.Printf("Failed to extract payment info: %v\n", err)
 		http.Error(w, "Failed to process message", http.StatusInternalServerError)
 		return
 	}
@@ -108,7 +133,7 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 
 	// To handle confirmation message
 	reply := fmt.Sprintf(
-		"✅ Got it. You want to send £%.2f to %s (Account: %s, Sort Code: %s).\nReply with 'Yes' to confirm or 'No' to cancel.",
+		" Got it. You want to send £%.2f to %s (Account: %s, Sort Code: %s).\nReply with 'Yes' to confirm or 'No' to cancel.",
 		info.Amount,
 		info.RecipientName,
 		info.AccountNumber,
@@ -117,7 +142,7 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 
 	// To send confirmation message from WhatsApp
 	if err := services.SendWhatsAppMessage(from, reply); err != nil {
-		fmt.Printf("❌ Failed to send confirmation: %v\n", err)
+		fmt.Printf("Failed to send confirmation: %v\n", err)
 		http.Error(w, "Failed to send message", http.StatusOK)
 		return
 	}

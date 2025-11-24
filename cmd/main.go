@@ -15,6 +15,7 @@ func main() {
 	godotenv.Load(".env")
 
 	routes.WhatsAppRoutes()
+	routes.RegisterRoute()
 
 	// To set a temporary initial amount balance
 	services.SetInitialBalance("whatsapp:+447778797699", 200.00)
@@ -29,7 +30,7 @@ func main() {
 
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
-		log.Fatalf("❌ Could not start sever: %v", err)
+		log.Fatalf("Could not start sever: %v", err)
 	}
 
 }

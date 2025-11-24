@@ -13,7 +13,7 @@ func SendWhatsAppMessage(to string, message string) error {
 	authToken := os.Getenv("TWILLIO_AUTH_TOKEN")
 	from := os.Getenv("TWILLIO_PHONE_NUMBER")
 
-	fmt.Println(".env: ", accountSID, authToken, from)
+	// fmt.Println(".env: ", accountSID, authToken, from)
 
 	// To create the req payload
 	form := url.Values{}
