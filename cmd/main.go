@@ -30,7 +30,11 @@ func main() {
 
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
+<<<<<<< HEAD
 		log.Fatalf("Could not start sever: %v", err)
+=======
+		log.Fatalf(" Could not start sever: %v", err)
+>>>>>>> 5928aff (Removed unnessary details from logs)
 	}
 
 }

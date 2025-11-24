@@ -35,7 +35,11 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 		totalTransactions := services.GetRecentTransactions(from, 5)
 
 		if len(totalTransactions) == 0 {
+<<<<<<< HEAD
 			_ = services.SendWhatsAppMessage(from, "No transactions found.")
+=======
+			_ = services.SendWhatsAppMessage(from, " No transactions found.")
+>>>>>>> 5928aff (Removed unnessary details from logs)
 		} else {
 			reply := "📑 Your recent transactions:\n"
 			for _, transaction := range totalTransactions {
@@ -88,7 +92,11 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 
 			// To send successful message
 			reply := fmt.Sprintf(
+<<<<<<< HEAD
 				" Payment Successful!\nRef: %s\nSent £%.2f to %s\nAccount Number: %s\nSort Code: %s",
+=======
+				"Payment Successful!\nRef: %s\nSent £%.2f to %s\nAccount Number: %s\nSort Code: %s",
+>>>>>>> 5928aff (Removed unnessary details from logs)
 				receipt.Reference,
 				receipt.Amount,
 				receipt.ToName,
@@ -96,11 +104,19 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 				receipt.SortCode,
 			)
 			_ = services.SendWhatsAppMessage(from, reply)
+<<<<<<< HEAD
 			fmt.Printf(" Payment processed for %s: £%.2f\n", from, pending.Amount)
 		} else {
 			reply := fmt.Sprintf("Insufficient balance. Your wallet has £%.2f", services.GetBalance(from))
 			_ = services.SendWhatsAppMessage(from, reply)
 			fmt.Printf("Payment failed for %s: insufficient funds\n", from)
+=======
+			fmt.Printf("Payment processed for %s: £%.2f\n", from, pending.Amount)
+		} else {
+			reply := fmt.Sprintf(" Insufficient balance. Your wallet has £%.2f", services.GetBalance(from))
+			_ = services.SendWhatsAppMessage(from, reply)
+			fmt.Printf(" Payment failed for %s: insufficient funds\n", from)
+>>>>>>> 5928aff (Removed unnessary details from logs)
 		}
 
 		// To clear session
@@ -111,10 +127,17 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 
 	// If No, cancel payment
 	if hasSession && message == "no" {
+<<<<<<< HEAD
 		fmt.Printf("Payment canceled by user: %+v\n", pending)
 
 		// To send cancellation reply
 		_ = services.SendWhatsAppMessage(from, "Payment cancelled.")
+=======
+		fmt.Printf(" Payment canceled by user: %+v\n", pending)
+
+		// To send cancellation reply
+		_ = services.SendWhatsAppMessage(from, " Payment cancelled.")
+>>>>>>> 5928aff (Removed unnessary details from logs)
 		delete(sessionStore, from)
 		w.WriteHeader(http.StatusOK)
 		return
@@ -123,7 +146,11 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 	// To Call AI to extract payment details as a new message, if otherwise
 	info, err := services.ExtractPaymentInfo(r.FormValue("Body"))
 	if err != nil {
+<<<<<<< HEAD
 		fmt.Printf("Failed to extract payment info: %v\n", err)
+=======
+		fmt.Printf(" Failed to extract payment info: %v\n", err)
+>>>>>>> 5928aff (Removed unnessary details from logs)
 		http.Error(w, "Failed to process message", http.StatusInternalServerError)
 		return
 	}
@@ -133,7 +160,11 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 
 	// To handle confirmation message
 	reply := fmt.Sprintf(
+<<<<<<< HEAD
 		" Got it. You want to send £%.2f to %s (Account: %s, Sort Code: %s).\nReply with 'Yes' to confirm or 'No' to cancel.",
+=======
+		"Got it. You want to send £%.2f to %s (Account: %s, Sort Code: %s).\nReply with 'Yes' to confirm or 'No' to cancel.",
+>>>>>>> 5928aff (Removed unnessary details from logs)
 		info.Amount,
 		info.RecipientName,
 		info.AccountNumber,
@@ -142,7 +173,11 @@ func HandleIncomingMessages(w http.ResponseWriter, r *http.Request) {
 
 	// To send confirmation message from WhatsApp
 	if err := services.SendWhatsAppMessage(from, reply); err != nil {
+<<<<<<< HEAD
 		fmt.Printf("Failed to send confirmation: %v\n", err)
+=======
+		fmt.Printf(" Failed to send confirmation: %v\n", err)
+>>>>>>> 5928aff (Removed unnessary details from logs)
 		http.Error(w, "Failed to send message", http.StatusOK)
 		return
 	}
